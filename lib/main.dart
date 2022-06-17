@@ -6,6 +6,7 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     title: 'Crude',
     home: MyApp(),
   ));
@@ -59,10 +60,12 @@ class _CrudState extends State<Crud> {
             ////////////////////////////////////////////////////////////////////// sending data into firebase
             ElevatedButton(
                 onPressed: () async {
-                  setState(() {
-                    mytext.text = "";
-                  });
-                  await firebase.add({'input': text2});
+                  if (mytext.text != "" && mytext.text != " ") {
+                    setState(() {
+                      mytext.text = "";
+                    });
+                    await firebase.add({'input': text2});
+                  }
                 },
                 child: Text("Submit")),
             //////////////////////////////////////////////////////////////////////
@@ -86,15 +89,35 @@ class _CrudState extends State<Crud> {
                               icon: Icon(Icons.delete),
                               highlightColor: Colors.red,
                               onPressed: () {
-                                // snapshot.data!.docs([doc.documentID]).delete();
-                                // FirebaseFirestore.instance.collection('mycrud').docs().delete();
-                                print(index);
-                                var a = snapshot.data!.docs[index].id;
-                                FirebaseFirestore.instance
-                                    .collection('mycrud')
-                                    .doc(a)
-                                    .delete();
-                                print(a);
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Are you want to delete'),
+                                        actions: [
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                var a = snapshot
+                                                    .data!.docs[index].id;
+                                                FirebaseFirestore.instance
+                                                    .collection('mycrud')
+                                                    .doc(a)
+                                                    .delete();
+                                                print(a);
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text('Yes')),
+                                          SizedBox(
+                                            width: 17,
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text('No')),
+                                        ],
+                                      );
+                                    });
                               },
                             ),
                           ),
